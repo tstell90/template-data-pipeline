@@ -1,0 +1,14 @@
+{%- if use_databricks %}
+Deploy the project to Databricks using Asset Bundles.
+
+Ask the user which target environment: dev (default) or prod.
+
+Steps:
+1. Run `databricks bundle validate -t <target>` to check the bundle is valid
+2. If validation passes, run `databricks bundle deploy -t <target>`
+3. Report the deployment result
+4. If deploying to prod, remind the user to verify in the Databricks workspace
+{%- else %}
+Databricks deployment is not configured for this project.
+To enable it, re-run `copier update` and set `use_databricks=true`.
+{%- endif %}

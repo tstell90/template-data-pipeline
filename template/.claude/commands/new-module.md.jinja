@@ -1,0 +1,11 @@
+Create a new Python module in the project with proper structure.
+
+Ask the user for:
+1. Module name (e.g. "data_loader", "transformations")
+2. Brief description of what it does
+
+Then:
+1. Create `src/{{ python_module_name }}/<module_name>.py` with a module docstring and a placeholder class or function
+2. Create `tests/test_<module_name>.py` with a basic test that imports the module
+3. Run `uv run pytest tests/test_<module_name>.py` to verify the test passes
+4. Run `uv run ruff check src/{{ python_module_name }}/<module_name>.py tests/test_<module_name>.py` to verify lint passes

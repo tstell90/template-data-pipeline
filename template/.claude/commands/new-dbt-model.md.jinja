@@ -1,0 +1,22 @@
+{%- if use_dbt %}
+Create a new dbt model following the medallion architecture.
+
+Ask the user for:
+1. **Layer**: bronze, silver, or gold
+2. **Model name** (e.g. "dim_well", "fact_production")
+3. **Brief description** of what the model does
+4. **Source table** (for bronze) or **upstream model** (for silver/gold)
+
+Then:
+1. Create `dbt/models/<layer>/<model_name>.sql` with:
+   - A config block: `{{ "{{" }} config(materialized='table') {{ "}}" }}` for gold, `{{ "{{" }} config(materialized='view') {{ "}}" }}` for silver/bronze
+   - A SELECT stub referencing the source or upstream model
+   - A comment explaining the model
+2. Create `dbt/models/<layer>/<model_name>.yml` with:
+   - Model description
+   - Column definitions (ask user or use placeholder columns)
+   - At least one test (e.g. `not_null` on the primary key)
+3. Report what was created
+{%- else %}
+dbt is not configured for this project.
+{%- endif %}

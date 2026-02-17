@@ -21,14 +21,58 @@ uv run mypy src/           # Type check
 uv run pre-commit run -a   # Run all pre-commit hooks
 ```
 
-## Conventions
+## Custom Slash Commands
 
-- Source code lives in `src/{{ python_module_name }}/`
-- Tests mirror source structure in `tests/`
-- All config (ruff, mypy, pytest) is in `pyproject.toml` — do not create separate config files
-- Use `uv run` to execute commands (ensures correct venv)
-- Do not commit `.env`, `.databrickscfg`, or any secrets
-- CI workflows are defined in `.github/workflows/ci.yml` and call reusable workflows from `{{ github_username }}/platform`
-{%- if use_dbt %}
-- dbt models follow medallion architecture: bronze (raw) -> silver (cleaned) -> gold (business logic)
+| Command | What it does |
+|---|---|
+| `/project:check` | Run ALL quality gates (lint + format + mypy + pytest) |
+| `/project:lint` | Auto-fix lint/format issues, report what remains |
+| `/project:test` | Run pytest with verbose output |
+| `/project:new-module` | Scaffold a new Python module + test file |
+{%- if use_databricks %}
+| `/project:deploy` | Deploy to Databricks via Asset Bundles |
 {%- endif %}
+{%- if use_dbt %}
+| `/project:dbt` | Run dbt build/test/run/compile |
+| `/project:new-dbt-model` | Scaffold a new dbt model (bronze/silver/gold) |
+{%- endif %}
+
+## Rules
+
+### Code Style
+- Use `uv run` for all commands — never activate venv manually
+- All config lives in `pyproject.toml` — do NOT create `.flake8`, `setup.cfg`, `mypy.ini`, or similar files
+- Line length: 120 characters (configured in ruff)
+- Quote style: double quotes
+- Imports: sorted by ruff (isort rules enabled)
+
+### Project Structure
+- Source code: `src/{{ python_module_name }}/`
+- Tests: `tests/` (mirror source structure, prefix files with `test_`)
+- Every new module MUST have a corresponding test file
+{%- if use_dbt %}
+- dbt models: `dbt/models/<layer>/` following medallion architecture
+  - **bronze**: Raw ingestion (1:1 with source). Materialized as views.
+  - **silver**: Cleaned, typed, deduplicated. Materialized as views.
+  - **gold**: Business logic, aggregations, reporting. Materialized as tables.
+- Every dbt model MUST have a `.yml` schema file with descriptions and at least one test
+{%- endif %}
+{%- if use_terraform %}
+- Terraform: `terraform/` — use variables for everything configurable, never hardcode secrets
+{%- endif %}
+
+### Safety
+- NEVER commit secrets (`.env`, `.databrickscfg`, API keys, tokens, passwords)
+- NEVER use `--no-verify` to skip pre-commit hooks
+- NEVER push directly to `main` — always use feature branches + PRs
+- NEVER modify `uv.lock` manually — let `uv lock` manage it
+
+### Git Workflow
+- Branch naming: `feature/<description>`, `fix/<description>`, `chore/<description>`
+- Commit messages: imperative mood, concise ("Add well production model", not "Added model for wells")
+- CI must pass before merging — CI calls reusable workflows from `{{ github_username }}/platform`
+
+### Before Submitting a PR
+1. Run `/project:check` to verify all quality gates pass
+2. Ensure test coverage for any new code
+3. Update CLAUDE.md if architectural decisions change

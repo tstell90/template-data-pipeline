@@ -1,0 +1,15 @@
+{%- if use_dbt %}
+Run dbt commands for this project.
+
+Ask the user what they want to do:
+1. **build** — Run `uv run --group dbt dbt build --project-dir dbt/` (compile + run + test)
+2. **test** — Run `uv run --group dbt dbt test --project-dir dbt/`
+3. **run** — Run `uv run --group dbt dbt run --project-dir dbt/`
+4. **compile** — Run `uv run --group dbt dbt compile --project-dir dbt/`
+
+If they specify a model selector (e.g. "just the gold models"), add `--select <selector>`.
+Report the results and highlight any test failures.
+{%- else %}
+dbt is not configured for this project.
+To enable it, re-run `copier update` and set `use_dbt=true`.
+{%- endif %}
