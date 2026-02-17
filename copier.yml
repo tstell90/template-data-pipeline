@@ -1,0 +1,82 @@
+_min_copier_version: "9.4.0"
+_templates_suffix: .jinja
+_subdirectory: template
+
+_exclude:
+  - "*.pyc"
+  - "__pycache__"
+  - ".git"
+
+_tasks:
+  - command: "uv sync"
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: "git init"
+    when: "{{ _copier_operation == 'copy' }}"
+  - command: "git add -A"
+    when: "{{ _copier_operation == 'copy' }}"
+
+# ── Questions ──────────────────────────────────────────────
+
+project_name:
+  type: str
+  help: "Human-readable project name (e.g. 'Bandera Production Pipeline')"
+  validator: "{% if not project_name %}Project name is required{% endif %}"
+
+project_slug:
+  type: str
+  help: "Repository / directory name (lowercase, hyphens)"
+  default: "{{ project_name | lower | replace(' ', '-') | replace('_', '-') }}"
+
+python_module_name:
+  type: str
+  help: "Python importable module name (lowercase, underscores)"
+  default: "{{ project_slug | replace('-', '_') }}"
+
+description:
+  type: str
+  help: "One-line project description"
+  default: ""
+
+author_name:
+  type: str
+  help: "Author name"
+  default: "tstell90"
+
+python_version:
+  type: str
+  help: "Python version"
+  choices:
+    - "3.11"
+    - "3.12"
+    - "3.13"
+  default: "3.12"
+
+use_devcontainer:
+  type: bool
+  help: "Include .devcontainer for VS Code / Codespaces?"
+  default: true
+
+use_databricks:
+  type: bool
+  help: "Include Databricks Asset Bundles config?"
+  default: true
+
+use_dbt:
+  type: bool
+  help: "Include dbt project (medallion architecture)?"
+  default: true
+
+use_terraform:
+  type: bool
+  help: "Include Terraform infrastructure?"
+  default: false
+
+github_username:
+  type: str
+  help: "GitHub username (for CI workflow references)"
+  default: "tstell90"
+
+platform_repo_ref:
+  type: str
+  help: "Platform repo version tag to pin CI workflows to"
+  default: "v1"

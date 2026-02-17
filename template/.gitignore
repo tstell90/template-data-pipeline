@@ -1,0 +1,50 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+.venv/
+
+# uv
+.uv/
+
+# Testing / Linting
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+htmlcov/
+*.xml
+coverage.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets — NEVER commit
+.env
+.env.*
+!.env.example
+.databrickscfg
+*.pem
+*.key
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Misc
+*.log

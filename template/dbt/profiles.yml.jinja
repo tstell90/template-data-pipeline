@@ -1,0 +1,12 @@
+{%- if use_dbt %}
+{{ python_module_name }}:
+  target: dev
+  outputs:
+    dev:
+      type: databricks
+      catalog: dev
+      schema: default
+      host: "{{ '{{ env_var(\"DATABRICKS_HOST\") }}' }}"
+      http_path: /sql/1.0/warehouses/YOUR_WAREHOUSE_ID
+      token: "{{ '{{ env_var(\"DATABRICKS_TOKEN\") }}' }}"
+{%- endif %}

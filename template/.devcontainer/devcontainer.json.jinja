@@ -1,0 +1,54 @@
+{
+  "name": "{{ project_name }}",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "PYTHON_VERSION": "{{ python_version }}",
+      "UV_VERSION": "0.10.3"
+    }
+  },
+  "forwardPorts": [8888],
+
+  "containerEnv": {
+    "UV_LINK_MODE": "copy"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "ms-python.debugpy",
+        "ms-python.mypy-type-checker",
+        "charliermarsh.ruff",
+        "tamasfe.even-better-toml",
+        "github.copilot",
+        "eamodio.gitlens"{% if use_databricks %},
+        "databricks.databricks"{% endif %}
+      ],
+      "settings": {
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.formatOnSave": true,
+          "editor.codeActionsOnSave": {
+            "source.fixAll.ruff": "explicit",
+            "source.organizeImports.ruff": "explicit"
+          }
+        },
+        "files.exclude": {
+          "**/__pycache__": true,
+          "**/.mypy_cache": true,
+          "**/.ruff_cache": true,
+          "**/.pytest_cache": true
+        }
+      }
+    }
+  },
+
+  "postCreateCommand": "bash .devcontainer/post_create.sh",
+
+  "features": {
+    "ghcr.io/devcontainers/features/git:1": {},
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  }
+}

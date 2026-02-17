@@ -1,0 +1,19 @@
+{%- if use_databricks %}
+bundle:
+  name: {{ project_slug }}
+
+workspace:
+  host: ${DATABRICKS_HOST}
+
+targets:
+  dev:
+    mode: development
+    default: true
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/dev
+
+  prod:
+    mode: production
+    workspace:
+      root_path: /Workspace/Users/${workspace.current_user.userName}/.bundle/${bundle.name}/prod
+{%- endif %}

@@ -1,0 +1,19 @@
+{%- if use_dbt %}
+name: {{ python_module_name }}
+version: "0.1.0"
+config-version: 2
+
+profile: {{ python_module_name }}
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+asset-paths: ["assets"]
+
+clean-targets:
+  - target
+  - dbt_packages
+{%- endif %}

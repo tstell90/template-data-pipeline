@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ci:
+    uses: {{ github_username }}/platform/.github/workflows/_python-ci.yml@{{ platform_repo_ref }}
+    with:
+      python-version: "{{ python_version }}"
+    secrets: inherit
+{%- if use_databricks %}
+
+  deploy-dev:
+    needs: ci
+    if: github.ref == 'refs/heads/dev'
+    uses: {{ github_username }}/platform/.github/workflows/_databricks-deploy.yml@{{ platform_repo_ref }}
+    with:
+      environment: dev
+    secrets: inherit
+
+  deploy-prod:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    uses: {{ github_username }}/platform/.github/workflows/_databricks-deploy.yml@{{ platform_repo_ref }}
+    with:
+      environment: prod
+    secrets: inherit
+{%- endif %}
+{%- if use_dbt %}
+
+  dbt-test:
+    needs: ci
+    uses: {{ github_username }}/platform/.github/workflows/_dbt-run.yml@{{ platform_repo_ref }}
+    with:
+      dbt-command: "build"
+      environment: dev
+    secrets: inherit
+{%- endif %}
+{%- if use_terraform %}
+
+  terraform-plan:
+    needs: ci
+    if: github.event_name == 'pull_request'
+    uses: {{ github_username }}/platform/.github/workflows/_terraform-plan-apply.yml@{{ platform_repo_ref }}
+    with:
+      environment: dev
+      plan-only: true
+    secrets: inherit
+
+  terraform-apply:
+    needs: ci
+    if: github.ref == 'refs/heads/main'
+    uses: {{ github_username }}/platform/.github/workflows/_terraform-plan-apply.yml@{{ platform_repo_ref }}
+    with:
+      environment: prod
+      plan-only: false
+    secrets: inherit
+{%- endif %}

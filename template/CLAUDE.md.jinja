@@ -1,0 +1,34 @@
+# {{ project_name }} — Claude Code Context
+
+## Project
+
+{{ description }}
+
+- **Stack**: Python {{ python_version }}{% if use_databricks %}, Databricks{% endif %}{% if use_dbt %}, dbt{% endif %}{% if use_terraform %}, Terraform{% endif %}
+- **Package manager**: uv (see pyproject.toml)
+- **Linter/formatter**: ruff (config in pyproject.toml)
+- **Type checker**: mypy (config in pyproject.toml)
+- **Tests**: pytest (config in pyproject.toml)
+
+## Commands
+
+```bash
+uv sync                    # Install deps
+uv run pytest              # Run tests
+uv run ruff check .        # Lint
+uv run ruff format .       # Format
+uv run mypy src/           # Type check
+uv run pre-commit run -a   # Run all pre-commit hooks
+```
+
+## Conventions
+
+- Source code lives in `src/{{ python_module_name }}/`
+- Tests mirror source structure in `tests/`
+- All config (ruff, mypy, pytest) is in `pyproject.toml` — do not create separate config files
+- Use `uv run` to execute commands (ensures correct venv)
+- Do not commit `.env`, `.databrickscfg`, or any secrets
+- CI workflows are defined in `.github/workflows/ci.yml` and call reusable workflows from `{{ github_username }}/platform`
+{%- if use_dbt %}
+- dbt models follow medallion architecture: bronze (raw) -> silver (cleaned) -> gold (business logic)
+{%- endif %}

@@ -1,0 +1,20 @@
+ARG PYTHON_VERSION={{ python_version }}
+FROM mcr.microsoft.com/devcontainers/python:1-${PYTHON_VERSION}-bookworm
+
+ARG UV_VERSION=0.10.3
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential \
+        curl \
+        zip \
+        unzip \
+        jq \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+COPY --from=ghcr.io/astral-sh/uv:${UV_VERSION} /uv /uvx /bin/
+{% if use_databricks %}
+# Install Databricks CLI
+RUN curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+{% endif %}

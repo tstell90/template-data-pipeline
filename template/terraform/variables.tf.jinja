@@ -1,0 +1,13 @@
+{%- if use_terraform %}
+variable "environment" {
+  description = "Deployment environment (dev, staging, prod)"
+  type        = string
+  default     = "dev"
+}
+
+variable "project_name" {
+  description = "Project name for resource naming"
+  type        = string
+  default     = "{{ project_slug }}"
+}
+{%- endif %}

@@ -1,0 +1,97 @@
+# {{ project_name }}
+
+{{ description }}
+
+## Quick Start
+
+```bash
+# Install dependencies
+uv sync
+
+# Run tests
+uv run pytest
+
+# Lint + format
+uv run ruff check .
+uv run ruff format .
+
+# Type check
+uv run mypy src/
+```
+
+## Development
+
+### Prerequisites
+
+- [uv](https://docs.astral.sh/uv/) (Python package manager)
+- Python {{ python_version }}+
+{%- if use_databricks %}
+- [Databricks CLI](https://docs.databricks.com/en/dev-tools/cli/index.html)
+{%- endif %}
+
+### Setup
+
+```bash
+# Install all dependencies (including dev)
+uv sync --all-extras --dev
+
+# Install pre-commit hooks
+uv run pre-commit install
+```
+{%- if use_dbt %}
+
+### dbt
+
+```bash
+# Install dbt dependencies
+uv run --group dbt dbt deps --project-dir dbt/
+
+# Run dbt models
+uv run --group dbt dbt build --project-dir dbt/
+```
+{%- endif %}
+{%- if use_terraform %}
+
+### Terraform
+
+```bash
+cd terraform/
+terraform init
+terraform plan
+```
+{%- endif %}
+{%- if use_databricks %}
+
+### Databricks
+
+```bash
+# Login
+databricks auth login
+
+# Validate bundle
+databricks bundle validate
+
+# Deploy
+databricks bundle deploy -t dev
+```
+{%- endif %}
+
+## Project Structure
+
+```
+{{ project_slug }}/
+├── src/{{ python_module_name }}/    # Source code
+├── tests/                           # Test suite
+{%- if use_dbt %}
+├── dbt/                             # dbt models (bronze/silver/gold)
+{%- endif %}
+{%- if use_terraform %}
+├── terraform/                       # Infrastructure as code
+{%- endif %}
+{%- if use_databricks %}
+├── notebooks/                       # Databricks notebooks
+├── databricks.yml                   # Asset Bundle config
+{%- endif %}
+├── pyproject.toml                   # Project config (deps, ruff, mypy, pytest)
+└── .github/workflows/ci.yml        # CI pipeline
+```
