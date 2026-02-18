@@ -38,6 +38,34 @@ uv run pre-commit run -a   # Run all pre-commit hooks
 | `/project:new-dbt-model` | Scaffold a new dbt model (bronze/silver/gold) |
 {%- endif %}
 
+## Core Modules
+
+Built-in helpers — import from the package root:
+
+```python
+from {{ python_module_name }} import settings, get_logger, retry
+```
+
+| Module | What it provides | Usage |
+|---|---|---|
+| `config.py` | `settings` — Typed config from env vars (Pydantic Settings) | `settings.environment`, `settings.is_dev` |
+| `logging.py` | `get_logger(name)` — Named logger with consistent format | `logger = get_logger(__name__)` |
+| `retry.py` | `@retry()` — Decorator with exponential backoff | `@retry(max_attempts=3, delay=1.0)` |
+| `env.py` | `current_env()`, `is_dev()`, `is_prod()`, `load_dotenv()` | Environment detection + .env loading |
+
+### Adding new settings
+
+1. Add the field to `Settings` class in `config.py`
+2. Add the env var to `.env.example`
+3. Set the value in your `.env` file
+4. Access via `settings.your_field_name`
+
+### Module naming conventions
+
+- Do NOT create `utils.py`, `helpers.py`, or `common.py` — these become dumping grounds
+- Name each module for exactly what it does (e.g. `retry.py`, `config.py`)
+- Export the public API via `__init__.py` using `__all__`
+
 ## Rules
 
 ### Code Style

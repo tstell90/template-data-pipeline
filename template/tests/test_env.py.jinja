@@ -1,0 +1,44 @@
+"""Tests for env module."""
+
+import os
+
+from {{ python_module_name }}.env import current_env, is_dev, is_prod, load_dotenv
+
+
+def test_default_env():
+    assert current_env() == os.environ.get("ENVIRONMENT", "dev").lower()
+
+
+def test_is_dev(monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "dev")
+    assert is_dev() is True
+    assert is_prod() is False
+
+
+def test_is_prod(monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "prod")
+    assert is_prod() is True
+    assert is_dev() is False
+
+
+def test_load_dotenv(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("TEST_LOAD_VAR=hello_world\n")
+
+    # Ensure the var doesn't exist yet
+    monkeypatch.delenv("TEST_LOAD_VAR", raising=False)
+
+    load_dotenv(env_file)
+    assert os.environ.get("TEST_LOAD_VAR") == "hello_world"
+
+    # Clean up
+    monkeypatch.delenv("TEST_LOAD_VAR", raising=False)
+
+
+def test_load_dotenv_does_not_override(tmp_path, monkeypatch):
+    env_file = tmp_path / ".env"
+    env_file.write_text("TEST_EXISTING=from_file\n")
+
+    monkeypatch.setenv("TEST_EXISTING", "from_env")
+    load_dotenv(env_file)
+    assert os.environ["TEST_EXISTING"] == "from_env"

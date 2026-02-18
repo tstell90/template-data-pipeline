@@ -1,3 +1,20 @@
-"""{{ project_name }}."""
+"""{{ project_name }}.
+
+Core exports:
+    settings    — Typed config from env vars (Pydantic Settings)
+    get_logger  — Named logger with consistent format
+    retry       — Decorator for resilient external calls
+"""
 
 __version__ = "0.1.0"
+
+from {{ python_module_name }}.config import settings
+from {{ python_module_name }}.logging import get_logger
+from {{ python_module_name }}.retry import retry
+
+__all__ = [
+    "settings",
+    "get_logger",
+    "retry",
+    "__version__",
+]

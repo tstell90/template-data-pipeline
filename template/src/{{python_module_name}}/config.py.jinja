@@ -1,0 +1,60 @@
+"""Typed configuration via Pydantic Settings.
+
+Reads from environment variables (and .env files). Every setting is
+validated at startup — no more "KeyError: DATABRICKS_HOST" at runtime.
+
+Usage:
+    from {{ python_module_name }}.config import settings
+
+    print(settings.environment)      # "dev"
+{%- if use_databricks %}
+    print(settings.databricks_host)  # "https://adb-XXXX..."
+{%- endif %}
+
+To add a new setting:
+    1. Add the field to the Settings class below
+    2. Add the env var to .env.example
+    3. Set the value in your .env file
+"""
+
+from __future__ import annotations
+
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+class Settings(BaseSettings):
+    """Project settings loaded from environment variables.
+
+    Field names map to env vars automatically:
+        environment  ->  ENVIRONMENT
+        databricks_host  ->  DATABRICKS_HOST
+    """
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
+
+    # ── Core ─────────────────────────────────────────────
+    environment: str = Field(default="dev", description="Deployment environment (dev, staging, prod)")
+{%- if use_databricks %}
+
+    # ── Databricks ───────────────────────────────────────
+    databricks_host: str = Field(default="", description="Databricks workspace URL")
+    databricks_token: str = Field(default="", description="Databricks access token")
+    databricks_http_path: str = Field(default="", description="SQL warehouse HTTP path")
+{%- endif %}
+
+    @property
+    def is_dev(self) -> bool:
+        return self.environment == "dev"
+
+    @property
+    def is_prod(self) -> bool:
+        return self.environment == "prod"
+
+
+# Singleton — import this everywhere
+settings = Settings()

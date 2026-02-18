@@ -1,0 +1,25 @@
+"""Tests for logging module."""
+
+import logging
+
+from {{ python_module_name }}.logging import get_logger, setup_logging
+
+
+def test_setup_logging():
+    setup_logging(level="DEBUG")
+    root = logging.getLogger()
+    assert root.level == logging.DEBUG
+    assert len(root.handlers) == 1
+
+
+def test_setup_logging_idempotent():
+    setup_logging()
+    setup_logging()
+    root = logging.getLogger()
+    assert len(root.handlers) == 1
+
+
+def test_get_logger():
+    logger = get_logger("test.module")
+    assert logger.name == "test.module"
+    assert isinstance(logger, logging.Logger)

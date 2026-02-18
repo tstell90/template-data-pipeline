@@ -1,0 +1,24 @@
+"""Tests for config module."""
+
+import os
+
+from {{ python_module_name }}.config import Settings
+
+
+def test_default_environment():
+    s = Settings(environment="dev")
+    assert s.environment == "dev"
+    assert s.is_dev is True
+    assert s.is_prod is False
+
+
+def test_prod_environment():
+    s = Settings(environment="prod")
+    assert s.is_prod is True
+    assert s.is_dev is False
+
+
+def test_reads_from_env(monkeypatch):
+    monkeypatch.setenv("ENVIRONMENT", "staging")
+    s = Settings()
+    assert s.environment == "staging"

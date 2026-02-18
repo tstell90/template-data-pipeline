@@ -1,0 +1,57 @@
+"""Structured logging setup.
+
+Provides consistent log format across all modules. Call setup_logging()
+once at startup, then use standard logging everywhere.
+
+Usage:
+    from {{ python_module_name }}.logging import setup_logging
+    import logging
+
+    setup_logging()
+    logger = logging.getLogger(__name__)
+    logger.info("Processing started", extra={"record_count": 42})
+"""
+
+from __future__ import annotations
+
+import logging
+import sys
+
+
+def setup_logging(level: str | int = "INFO") -> None:
+    """Configure root logger with a consistent format.
+
+    Args:
+        level: Log level name ("DEBUG", "INFO", etc.) or numeric level.
+    """
+    if isinstance(level, str):
+        level = getattr(logging, level.upper(), logging.INFO)
+
+    handler = logging.StreamHandler(sys.stdout)
+    handler.setFormatter(
+        logging.Formatter(
+            fmt="%(asctime)s | %(levelname)-8s | %(name)s | %(message)s",
+            datefmt="%Y-%m-%d %H:%M:%S",
+        )
+    )
+
+    root = logging.getLogger()
+    root.setLevel(level)
+
+    # Avoid duplicate handlers on repeated calls
+    root.handlers.clear()
+    root.addHandler(handler)
+
+    # Quiet noisy third-party loggers
+    for noisy in ("urllib3", "azure", "databricks", "httpx"):
+        logging.getLogger(noisy).setLevel(logging.WARNING)
+
+
+def get_logger(name: str) -> logging.Logger:
+    """Convenience shortcut for getting a named logger.
+
+    Usage:
+        from {{ python_module_name }}.logging import get_logger
+        logger = get_logger(__name__)
+    """
+    return logging.getLogger(name)
