@@ -8,6 +8,9 @@
 # Install dependencies
 uv sync
 
+# Copy environment config and fill in your values
+cp .env.example .env
+
 # Run tests
 uv run pytest
 
@@ -37,42 +40,111 @@ uv sync --all-extras --dev
 
 # Install pre-commit hooks
 uv run pre-commit install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your values
+```
+
+## Environments
+
+This project uses environment variables for all secrets and configuration.
+**No secrets should ever be hardcoded in source files.**
+
+### Local Development
+
+1. Copy `.env.example` to `.env` and fill in your values
+2. Source it before running commands: `source .env` (bash) or `set -a; source .env; set +a`
+3. For multiple environments, use `.env.dev`, `.env.prod`, etc.
+
+### CI/CD (GitHub Actions)
+
+Secrets and config are managed via **GitHub Environments**:
+
+| Environment | Branch | When |
+|---|---|---|
+| `dev` | `dev` | Auto-deploy on push |
+| `prod` | `main` | Auto-deploy on push (with approval) |
+
+#### Required GitHub Secrets (per environment)
+
+| Secret | Description |
+|---|---|
+{%- if use_databricks %}
+| `DATABRICKS_HOST` | Workspace URL (e.g. `https://adb-XXXX.XX.azuredatabricks.net`) |
+| `DATABRICKS_TOKEN` | Personal access token or service principal token |
+{%- endif %}
+{%- if use_terraform %}
+| `ARM_CLIENT_ID` | Azure service principal client ID |
+| `ARM_CLIENT_SECRET` | Azure service principal secret |
+| `ARM_SUBSCRIPTION_ID` | Azure subscription ID |
+| `ARM_TENANT_ID` | Azure AD tenant ID |
+{%- endif %}
+
+#### Setting Up GitHub Environments
+
+```bash
+# Using gh CLI (recommended)
+# 1. Create environments
+gh api repos/{{ github_username }}/REPO_NAME/environments/dev -X PUT
+gh api repos/{{ github_username }}/REPO_NAME/environments/prod -X PUT
+
+# 2. Add secrets to each environment
+gh secret set DATABRICKS_HOST --env dev
+gh secret set DATABRICKS_TOKEN --env dev
+# ... repeat for prod with prod values
+
+# 3. (Optional) Add protection rules to prod
+# Go to: Settings > Environments > prod > Required reviewers
 ```
 {%- if use_dbt %}
 
 ### dbt
 
-```bash
-# Install dbt dependencies
-uv run --group dbt dbt deps --project-dir dbt/
+dbt targets map to environments. Switch with `--target`:
 
-# Run dbt models
+```bash
+# Dev (default)
 uv run --group dbt dbt build --project-dir dbt/
+
+# Prod
+uv run --group dbt dbt build --project-dir dbt/ --target prod
 ```
+
+Environment variables (`DATABRICKS_HOST`, `DATABRICKS_TOKEN`, `DATABRICKS_HTTP_PATH`) must be set before running dbt.
 {%- endif %}
 {%- if use_terraform %}
 
 ### Terraform
 
+Each environment has its own backend config and variable overrides:
+
 ```bash
 cd terraform/
-terraform init
-terraform plan
+
+# Dev
+terraform init -backend-config=environments/dev.backend.hcl
+terraform plan -var-file=environments/dev.tfvars
+
+# Prod
+terraform init -backend-config=environments/prod.backend.hcl -reconfigure
+terraform plan -var-file=environments/prod.tfvars
 ```
+
+Auth is via `ARM_*` env vars — set them in `.env` or export them directly.
 {%- endif %}
 {%- if use_databricks %}
 
 ### Databricks
 
+Asset Bundle targets map to environments:
+
 ```bash
-# Login
-databricks auth login
-
-# Validate bundle
-databricks bundle validate
-
-# Deploy
+# Dev (default)
 databricks bundle deploy -t dev
+
+# Prod
+databricks bundle deploy -t prod
 ```
 {%- endif %}
 
@@ -80,6 +152,7 @@ databricks bundle deploy -t dev
 
 ```
 {{ project_slug }}/
+├── .env.example                     # Environment variable template
 ├── src/{{ python_module_name }}/    # Source code
 ├── tests/                           # Test suite
 {%- if use_dbt %}
@@ -87,11 +160,12 @@ databricks bundle deploy -t dev
 {%- endif %}
 {%- if use_terraform %}
 ├── terraform/                       # Infrastructure as code
+│   └── environments/                # Per-environment config (backend + tfvars)
 {%- endif %}
 {%- if use_databricks %}
 ├── notebooks/                       # Databricks notebooks
-├── databricks.yml                   # Asset Bundle config
+├── databricks.yml                   # Asset Bundle config (dev + prod targets)
 {%- endif %}
 ├── pyproject.toml                   # Project config (deps, ruff, mypy, pytest)
-└── .github/workflows/ci.yml        # CI pipeline
+└── .github/workflows/ci.yml        # CI pipeline (dev + prod environments)
 ```

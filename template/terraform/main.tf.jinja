@@ -7,22 +7,28 @@ terraform {
       source  = "hashicorp/azurerm"
       version = "~> 4.0"
     }
+    azuread = {
+      source  = "hashicorp/azuread"
+    }
     databricks = {
       source  = "databricks/databricks"
       version = "~> 1.0"
     }
   }
 
-  backend "azurerm" {
-    # Configure in backend.hcl or via -backend-config
-  }
+  # Remote state in Azure Storage.
+  # Initialize with: terraform init -backend-config=environments/dev.backend.hcl
+  backend "azurerm" {}
 }
 
 provider "azurerm" {
   features {}
+  # Authenticates via ARM_* env vars (set in .env or GitHub Secrets)
 }
 
+provider "azuread" {}
+
 provider "databricks" {
-  # Configured via DATABRICKS_HOST and DATABRICKS_TOKEN env vars
+  # Authenticates via DATABRICKS_HOST and DATABRICKS_TOKEN env vars
 }
 {%- endif %}

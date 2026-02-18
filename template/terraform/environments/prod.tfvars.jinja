@@ -1,0 +1,7 @@
+{%- if use_terraform %}
+# Non-secret variable overrides for PROD environment.
+# Usage: terraform plan -var-file=environments/prod.tfvars
+environment  = "prod"
+project_name = "{{ project_slug }}"
+location     = "southcentralus"
+{%- endif %}

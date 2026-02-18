@@ -1,0 +1,8 @@
+{%- if use_terraform %}
+# Terraform backend config for DEV environment.
+# Usage: terraform init -backend-config=environments/dev.backend.hcl
+resource_group_name  = "your-rg-name"
+storage_account_name = "yourstorageaccount"
+container_name       = "tfstate"
+key                  = "{{ project_slug }}-dev.tfstate"
+{%- endif %}

@@ -1,0 +1,29 @@
+Help the user set up environments for this project.
+
+Ask which they want to set up:
+1. **Local** — Create a `.env` file from `.env.example` and help fill in values
+2. **GitHub** — Create GitHub Environments (dev/prod) and set secrets via `gh` CLI
+3. **Both**
+
+For **Local**:
+1. Copy `.env.example` to `.env`
+2. Walk through each variable, asking the user for their values
+3. Write the completed `.env` file
+4. Remind them: NEVER commit `.env`
+
+For **GitHub**:
+1. Detect the current repo name from `git remote -v`
+2. Create environments via `gh api repos/OWNER/REPO/environments/dev -X PUT`
+3. For each required secret, prompt the user and set it via `gh secret set NAME --env ENV`
+4. List the required secrets:
+{%- if use_databricks %}
+   - `DATABRICKS_HOST` — Workspace URL
+   - `DATABRICKS_TOKEN` — Access token
+{%- endif %}
+{%- if use_terraform %}
+   - `ARM_CLIENT_ID` — Azure service principal
+   - `ARM_CLIENT_SECRET` — Azure service principal secret
+   - `ARM_SUBSCRIPTION_ID` — Azure subscription
+   - `ARM_TENANT_ID` — Azure tenant
+{%- endif %}
+5. For prod, remind about protection rules (required reviewers)

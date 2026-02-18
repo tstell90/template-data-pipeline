@@ -1,4 +1,7 @@
 {%- if use_terraform %}
+# ── Non-secret variables ─────────────────────────────────
+# Safe to have defaults. Overridden per environment via .tfvars files.
+
 variable "environment" {
   description = "Deployment environment (dev, staging, prod)"
   type        = string
@@ -10,4 +13,18 @@ variable "project_name" {
   type        = string
   default     = "{{ project_slug }}"
 }
+
+variable "location" {
+  description = "Azure region"
+  type        = string
+  default     = "southcentralus"
+}
+
+# ── Sensitive variables ──────────────────────────────────
+# NO defaults — must be provided via env vars (TF_VAR_*) or -var flag.
+# In CI, these come from GitHub Environment Secrets.
+# Locally, source from .env: export $(grep -v '^#' .env | xargs)
+
+# NOTE: ARM_* env vars are read directly by the azurerm provider.
+# Only declare TF variables here if you need them in resource definitions.
 {%- endif %}

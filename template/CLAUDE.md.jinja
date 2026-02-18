@@ -29,6 +29,7 @@ uv run pre-commit run -a   # Run all pre-commit hooks
 | `/project:lint` | Auto-fix lint/format issues, report what remains |
 | `/project:test` | Run pytest with verbose output |
 | `/project:new-module` | Scaffold a new Python module + test file |
+| `/project:setup-env` | Set up local `.env` and/or GitHub Environment secrets |
 {%- if use_databricks %}
 | `/project:deploy` | Deploy to Databricks via Asset Bundles |
 {%- endif %}
@@ -59,6 +60,16 @@ uv run pre-commit run -a   # Run all pre-commit hooks
 {%- endif %}
 {%- if use_terraform %}
 - Terraform: `terraform/` — use variables for everything configurable, never hardcode secrets
+{%- endif %}
+
+### Environments
+- All secrets and connection strings come from environment variables — see `.env.example`
+- Local: copy `.env.example` to `.env`, fill in values, source it
+- CI: secrets are set per GitHub Environment (dev, prod) — use `/project:setup-env` to configure
+- NEVER hardcode connection strings, tokens, or secrets in source files
+{%- if use_terraform %}
+- Terraform uses per-environment files in `terraform/environments/` (`.backend.hcl` + `.tfvars`)
+- Auth is via `ARM_*` env vars — the provider reads them directly
 {%- endif %}
 
 ### Safety
