@@ -1,0 +1,62 @@
+# Work Issue
+
+Claim and implement a GitHub issue end-to-end: branch → implement → test → commit → PR.
+
+## Usage
+Invoke when user says: "work issue #N", "implement issue N", "go work on issue N"
+
+## Pre-flight checks
+
+1. **Read the issue**: `gh issue view <N>`
+2. **Check if claimed** — look for an assignee or a comment saying someone is working on it within the last 48 hours. If claimed, stop and notify user.
+3. **Assign to self**: `gh issue edit <N> --add-assignee "@me"`
+4. **Comment to claim**: `gh issue comment <N> --body "Starting work on this."`
+
+## Workflow
+
+### 1. Branch
+```bash
+git checkout main && git pull
+git checkout -b feature/issue-<N>-<short-description>
+```
+
+### 2. Plan
+- Read the acceptance criteria from the issue
+- Query Databricks (via MCP) if data investigation is needed
+- Review existing code structure before writing anything
+- **Present an implementation plan and get user approval before writing code**
+
+### 3. Implement (TDD approach)
+- Write **failing tests first** that match the acceptance criteria
+- Confirm tests fail as expected
+- Write the minimum code to make tests pass
+- Refactor while keeping tests green
+
+### 4. Quality gates
+```bash
+uv run pytest              # all tests must pass
+uv run ruff check . --fix  # fix lint issues
+uv run ruff format .       # format
+uv run mypy src/           # type check
+```
+
+### 5. Commit
+```bash
+git add <specific files>   # never git add -A
+git commit -m "concise imperative message
+
+Closes #<N>"
+```
+
+### 6. Pull Request
+Use `/project:create-pr` or:
+```bash
+gh pr create --title "..." --body "..." --base main
+```
+
+## Notes
+- Never push directly to main
+- Always propose commit message to user before committing
+- If tests can't pass, document why in a comment on the issue and stop
+{% if use_databricks %}- Use MCP Databricks connection to query tables and verify data shapes before implementation{% endif %}
+{% if use_dbt %}- For dbt changes: run `uv run dbt compile` then query the compiled SQL to verify output{% endif %}

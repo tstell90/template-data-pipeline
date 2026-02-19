@@ -23,12 +23,25 @@ uv run pre-commit run -a   # Run all pre-commit hooks
 
 ## Custom Slash Commands
 
+### Quality & Code
 | Command | What it does |
 |---|---|
 | `/project:check` | Run ALL quality gates (lint + format + mypy + pytest) |
 | `/project:lint` | Auto-fix lint/format issues, report what remains |
 | `/project:test` | Run pytest with verbose output |
 | `/project:new-module` | Scaffold a new Python module + test file |
+| `/project:tdd` | Implement a feature using Test-Driven Development |
+
+### Issue-Driven Workflow
+| Command | What it does |
+|---|---|
+| `/project:create-issue` | Create a rich GitHub issue with problem statement + acceptance criteria |
+| `/project:work-issue` | Claim + implement + test + commit + PR for an issue |
+| `/project:create-pr` | Create a well-structured pull request for current branch |
+
+### Environment & Deploy
+| Command | What it does |
+|---|---|
 | `/project:setup-env` | Set up local `.env` and/or GitHub Environment secrets |
 {%- if use_databricks %}
 | `/project:deploy` | Deploy to Databricks via Asset Bundles |
@@ -37,6 +50,11 @@ uv run pre-commit run -a   # Run all pre-commit hooks
 | `/project:dbt` | Run dbt build/test/run/compile |
 | `/project:new-dbt-model` | Scaffold a new dbt model (bronze/silver/gold) |
 {%- endif %}
+
+### Meta
+| Command | What it does |
+|---|---|
+| `/project:skill-builder` | Research best practices and create a new skill for a workflow |
 
 ## Core Modules
 
@@ -65,6 +83,45 @@ from {{ python_module_name }} import settings, get_logger, retry
 - Do NOT create `utils.py`, `helpers.py`, or `common.py` — these become dumping grounds
 - Name each module for exactly what it does (e.g. `retry.py`, `config.py`)
 - Export the public API via `__init__.py` using `__all__`
+
+## MCP Setup
+
+Two MCP servers power the most useful workflows. Copy `.mcp.json.example` to `.mcp.json` and fill in your values:
+
+```bash
+cp .mcp.json.example .mcp.json
+# .mcp.json is in .gitignore — never commit it (contains tokens)
+```
+
+### Databricks SQL MCP
+Lets Claude write and execute SQL directly against your Databricks workspace.
+
+1. Get your workspace URL from the browser: `https://adb-XXXXXXXX.X.azuredatabricks.net`
+2. Create a Personal Access Token: Databricks workspace → top-right avatar → Settings → Developer → Access Tokens → Generate New Token (name it "MCP")
+3. Paste both into `.mcp.json` under `databricks-sql.env`
+4. Restart Claude Code and run `/mcp` to verify the connection
+
+### Context7 MCP
+Gives Claude up-to-date documentation for any library (pandas, dbt, Databricks SDK, etc.) so it uses current APIs — not outdated training data.
+
+**Requires Node.js** — install from https://nodejs.org if not present (`node --version` to check).
+
+After filling in `.mcp.json`, restart Claude Code and ask: "What MCP servers do you have access to?" to verify.
+
+## Issue-Driven Development Workflow
+
+The recommended workflow for new features and bug fixes:
+
+```
+1. /project:create-issue   → document the work with acceptance criteria
+2. /project:work-issue N   → claim, branch, implement (TDD), commit, PR
+3. Review PR → merge
+```
+
+**Recommended progression:**
+- Start with **sequential** single-issue workflows until comfortable
+- Learn skills → rules → commands → CLAUDE.md thoroughly
+- Then expand to concurrent work (multiple instances + git worktrees)
 
 ## Rules
 
@@ -111,7 +168,22 @@ from {{ python_module_name }} import settings, get_logger, retry
 - Commit messages: imperative mood, concise ("Add well production model", not "Added model for wells")
 - CI must pass before merging — CI calls reusable workflows from `{{ github_username }}/platform`
 
+### Test-Driven Development
+- **Always write failing tests before writing implementation code**
+- Confirm tests fail first, then write minimum code to pass them, then refactor
+- Use `/project:tdd` to follow the full Red → Green → Refactor cycle
+- Test names describe behavior: `test_retry_waits_between_attempts` not `test_retry_1`
+{%- if use_dbt %}
+
+### dbt SQL Files
+- When working with any `.sql` file in `dbt/models/`, **always read the corresponding `.yml` schema file first**
+- The `.yml` contains the catalog, schema, materialization strategy, and column descriptions
+- Use `{{ "{{" }} ref('model_name') {{ "}}" }}` to reference other models — never hardcode table paths
+- After creating or modifying a model, query it via MCP to verify results before committing
+{%- endif %}
+
 ### Before Submitting a PR
 1. Run `/project:check` to verify all quality gates pass
 2. Ensure test coverage for any new code
 3. Update CLAUDE.md if architectural decisions change
+4. Use `/project:create-pr` to generate a properly structured PR

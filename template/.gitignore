@@ -35,6 +35,9 @@ Thumbs.db
 *.pem
 *.key
 
+# MCP config (contains tokens — use .mcp.json.example as reference)
+.mcp.json
+
 # Terraform
 .terraform/
 *.tfstate

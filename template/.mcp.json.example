@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "databricks-sql": {
+      "command": "uvx",
+      "args": ["databricks-mcp"],
+      "env": {
+        "DATABRICKS_HOST": "https://your-workspace.azuredatabricks.net",
+        "DATABRICKS_TOKEN": "your-personal-access-token"
+      }
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    }
+  }
+}
