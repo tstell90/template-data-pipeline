@@ -12,6 +12,16 @@ jobs:
     with:
       python-version: "{{ python_version }}"
     secrets: inherit
+
+  # Belt and braces alongside the local pre-commit hook: a hook can be
+  # skipped with --no-verify, and a credential can arrive through a merge,
+  # which no local hook ever sees.
+  secret-scan:
+    name: secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: {{ github_username }}/platform/actions/detect-secrets@{{ platform_repo_ref }}
 {%- if use_databricks %}
 
   deploy-dev:
