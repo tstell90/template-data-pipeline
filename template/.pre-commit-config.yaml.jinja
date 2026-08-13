@@ -19,7 +19,11 @@ repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
     rev: v0.11.0
     hooks:
-      - id: ruff-check
+        # `ruff-check` only exists from ruff-pre-commit v0.12; at the rev
+        # pinned above the id is `ruff`. Getting this wrong makes
+        # pre-commit error on the whole file, so NO hook runs at all —
+        # which is exactly what happened in three generated repos.
+      - id: ruff
         types_or: [python, pyi]
         args: [--fix]
       - id: ruff-format
@@ -34,3 +38,16 @@ repos:
         language: system
         types: [python]
         pass_filenames: false
+
+  # ── Secrets ────────────────────────────────────────────
+  # Catches credentials assigned to secret-ish names in any language. The
+  # detect-private-key hook above only matches PEM blocks.
+  #
+  # Pinned to an exact tag, deliberately NOT {{ platform_repo_ref }}: that is
+  # a floating tag, correct for Actions (which re-resolves every run) but wrong
+  # for pre-commit, which caches by rev and never re-clones a mutable
+  # reference. Bump with `pre-commit autoupdate`.
+  - repo: https://github.com/{{ github_username }}/platform
+    rev: v1.4.1
+    hooks:
+      - id: detect-hardcoded-secrets
